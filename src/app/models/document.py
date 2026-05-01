@@ -5,6 +5,9 @@ from datetime import datetime
 
 
 class Document(Base):
+
+    __table__ = "Documents"
+    
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
     title: Mapped[str] = mapped_column(String(255),
                                           nullable=False,
@@ -18,3 +21,4 @@ class Document(Base):
 
     uploaded_by = Relationship("User",back_populates='documents')
     doc_org = Relationship("Organization",back_populates='org_docs')
+    document_chunks = Relationship('DocumentChunk',back_populates='document')
