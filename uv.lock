@@ -618,6 +618,7 @@ dependencies = [
     { name = "langchain-openai" },
     { name = "langchain-postgres" },
     { name = "openai" },
+    { name = "pgvector" },
     { name = "psycopg" },
     { name = "python-dotenv" },
 ]
@@ -631,6 +632,7 @@ requires-dist = [
     { name = "langchain-openai", specifier = ">=1.1.10" },
     { name = "langchain-postgres", specifier = ">=0.0.17" },
     { name = "openai", specifier = ">=2.24.0" },
+    { name = "pgvector", specifier = ">=0.3.6" },
     { name = "psycopg", specifier = ">=3.3.3" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
 ]

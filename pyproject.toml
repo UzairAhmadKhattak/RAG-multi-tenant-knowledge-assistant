@@ -12,6 +12,7 @@ dependencies = [
     "langchain-openai>=1.1.10",
     "langchain-postgres>=0.0.17",
     "openai>=2.24.0",
+    "pgvector>=0.3.6",
     "psycopg>=3.3.3",
     "python-dotenv>=1.2.2",
 ]
