@@ -1,5 +1,5 @@
 [project]
-name = "RAG-project"
+name = "knowlege-assistant"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
