@@ -16,4 +16,4 @@ class DocumentChunk(Base):
     embedding:Mapped[list[float]] = mapped_column(Vector(1536))
     meta_data: Mapped[dict] = mapped_column(JSONB)
     
-    document = Relationship("User",back_populates='document_chunks')
+    document = Relationship("Document",back_populates='document_chunks')

@@ -2,8 +2,6 @@ from .base import Base
 from sqlalchemy import String, Integer, DateTime,ForeignKey,func,Text,Enum
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from datetime import datetime
-import enum
-
 
 
 class Conversation(Base):
@@ -19,3 +17,5 @@ class Conversation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime,server_default=func.now())
 
     user = Relationship("User",back_populates="conversations")
+    messages = Relationship("Message",back_populates="conversation")
+    conversation_query_logs = Relationship("QueryLog",back_populates="conversation")

@@ -25,6 +25,6 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime,server_default=func.now())
 
     organization = Relationship("Organization", back_populates='users')
-    documents = Relationship("Documents", back_populates='uploaded_by')
+    documents = Relationship("Document", back_populates='uploaded_by')
     conversations = Relationship("Conversation",back_populates='user')
     query_logs = Relationship("QueryLog",back_populates='query_log_user')

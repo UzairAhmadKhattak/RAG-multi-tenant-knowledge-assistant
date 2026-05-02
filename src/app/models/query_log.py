@@ -25,4 +25,4 @@ class QueryLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime,server_default=func.now())
 
     query_log_user = Relationship("User",back_populates="query_logs")
-    conversation = Relationship("User",back_populates="conversation_query_logs")
+    conversation = Relationship("Conversation",back_populates="conversation_query_logs")
