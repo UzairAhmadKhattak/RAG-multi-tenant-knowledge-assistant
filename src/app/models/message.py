@@ -1,4 +1,4 @@
-from base import Base
+from .base import Base
 from sqlalchemy import Integer, DateTime,ForeignKey,func,Text,Enum
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from datetime import datetime
@@ -10,7 +10,7 @@ class MessageRole(str, enum.Enum):
 
 class Message(Base):
 
-    __table__ = "messages"
+    __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
     content: Mapped[int] = mapped_column(Text,nullable=False)

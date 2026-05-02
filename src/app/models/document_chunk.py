@@ -1,9 +1,12 @@
-from base import Base
-from sqlalchemy import Integer,ForeignKey,Text,JSONB
+from .base import Base
+from sqlalchemy import Integer,ForeignKey,Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from pgvector.sqlalchemy import Vector
 
 class DocumentChunk(Base):
+    __tablename__ = "document_chunks"
+
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
 
     organization_id: Mapped[int] = mapped_column(ForeignKey('organizations.id'))

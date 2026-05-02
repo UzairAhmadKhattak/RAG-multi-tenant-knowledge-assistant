@@ -1,4 +1,4 @@
-from base import Base
+from .base import Base
 from sqlalchemy import String, Integer, DateTime,Enum,ForeignKey,func
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 import enum
@@ -11,7 +11,7 @@ class UserRole(str,enum.Enum):
     employee = "employee"
 
 class User(Base):
-    __table__ = 'users'
+    __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
     username: Mapped[str] = mapped_column(String(255),

@@ -1,4 +1,4 @@
-from base import Base
+from .base import Base
 from sqlalchemy import String, Integer, DateTime,ForeignKey,func,Text,Enum,Numeric
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from datetime import datetime
@@ -9,7 +9,7 @@ import enum
 
 class QueryLog(Base):
 
-    __table__ = "query_logs"
+    __tablename__ = "query_logs"
 
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
     query: Mapped[str] = mapped_column(Text,nullable=False)

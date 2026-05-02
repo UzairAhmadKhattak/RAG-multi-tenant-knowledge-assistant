@@ -1,4 +1,4 @@
-from base import Base
+from .base import Base
 from sqlalchemy import String, Integer, DateTime,ForeignKey,func
 from sqlalchemy.orm import Mapped, mapped_column, Relationship
 from datetime import datetime
@@ -6,7 +6,7 @@ from datetime import datetime
 
 class Document(Base):
 
-    __table__ = "Documents"
+    __tablename__ = "documents"
     
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
     title: Mapped[str] = mapped_column(String(255),
