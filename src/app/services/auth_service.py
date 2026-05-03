@@ -13,6 +13,12 @@ async def get_user_by_username(db: AsyncSession, username: str):
     return result.scalar_one_or_none()
 
 
+async def get_user_by_id(db: AsyncSession, id: str):
+    result = await db.execute(
+        select(User).where(User.id == int(id))
+    )
+    return result.scalar_one_or_none()
+
 async def authenticate_user(db: AsyncSession, username: str, password: str):
     user = await get_user_by_username(db, username)
 
@@ -31,7 +37,7 @@ async def login_user(db: AsyncSession, username: str, password: str):
     if not user:
         return None
 
-    access_token = create_token({"sub": user.id,"type":"access_token"},
+    access_token = create_token({"sub": str(user.id),"type":"access_token"},
                                 ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_token = create_token({"sub": str(user.id),"type":"refresh_token"},
                                  REFRESH_TOKEN_EXPIRE_MINUTES)
