@@ -1,10 +1,8 @@
 import bcrypt
 import jwt
-from datetime import datetime, timedelta
-
-SECRET_KEY = "super-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from datetime import datetime, timedelta, timezone
+from .constants import ALGORITHM
+from .config import settings
 
 
 # --------------------
@@ -32,8 +30,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # --------------------
 # JWT token (unchanged)
 # --------------------
-def create_access_token(data: dict):
+def create_token(data: dict, token_expiry_in_min):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=token_expiry_in_min)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)

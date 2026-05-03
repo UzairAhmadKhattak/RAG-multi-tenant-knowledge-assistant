@@ -5,7 +5,7 @@ from src.app.db.session import get_db
 from src.app.services.auth_service import login_user
 
 auth_router = APIRouter()
-@auth_router.post("/login")
+@auth_router.post("/login",response_model=UserLoginResponse)
 async def login(payload: UserLoginRequest, db: AsyncSession = Depends(get_db)):
     result = await login_user(db, payload.username, payload.password)
 

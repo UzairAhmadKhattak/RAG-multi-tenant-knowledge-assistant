@@ -1,5 +1,6 @@
 from src.app.models import User
-from src.app.core.security import verify_password, create_access_token
+from src.app.core.security import verify_password, create_token
+from src.app.core.constants import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -30,9 +31,16 @@ async def login_user(db: AsyncSession, username: str, password: str):
     if not user:
         return None
 
-    token = create_access_token({"sub": user.id})
+    access_token = create_token({"sub": user.id,"type":"access_token"},
+                                ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token = create_token({"sub": str(user.id),"type":"refresh_token"},
+                                 REFRESH_TOKEN_EXPIRE_MINUTES)
 
     return {
-        "access_token": token,
-        "token_type": "bearer"
+        "username": user.username,
+        "role": user.role,
+        "organization_id": user.organization_id,
+        "created_at": user.created_at,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
     }
