@@ -1,13 +1,12 @@
 import bcrypt
 import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
 from datetime import datetime, timedelta, timezone
-from .constants import ALGORITHM
-from .config import settings
+from src.app.core.config import settings
+from src.app.core.constants import ALGORITHM
+from fastapi import HTTPException,status
 
 
-# --------------------
-# Password hashing with bcrypt
-# --------------------
 def hash_password(password: str) -> str:
     """Hash password using bcrypt and return as string"""
     # Generate salt and hash the password
@@ -27,11 +26,24 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
-# --------------------
-# JWT token (unchanged)
-# --------------------
 def create_token(data: dict, token_expiry_in_min):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=token_expiry_in_min)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> dict | None:
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
+        return payload
+
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Token is expired")
+
+    except InvalidTokenError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid token")
