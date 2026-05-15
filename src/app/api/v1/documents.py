@@ -9,7 +9,7 @@ from src.app.schemas.base import GeneralResponse
 from src.app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.api.deps import get_current_user
-
+from src.app.services.embed import embed_file
 
 
 doc_router = APIRouter()
@@ -23,18 +23,20 @@ async def upload_doc(file: UploadFile = File(...),
     ):
     file_url = f"{UPLOADS_FOLDER}/{file.filename}"
     file_path = f"{UPLOADS_PATH}/{file.filename}"
-    await save_file(file_path=file_path,file=file)
-    
+    mime_type = await save_file(file_path=file_path,file=file)
+    organization_id = user.organization_id
+    user_id = user.id
     doc, created = await get_or_create(db, 
                                  Document, 
                                  title = title, 
                                  defaults={"file_path":file_url,
-                                           "uploaded_by_id":user.id,
-                                           "organization_id":user.organization_id
+                                           "uploaded_by_id":user_id,
+                                           "organization_id":organization_id
                                            }
                                 )
-    # embed the document with metadata
-
+    await embed_file(db,file_path,mime_type,organization_id,doc.id)
+    await db.commit()
+    await db.close()
     if created:
         return {'message':'Document successfully uploaded',"status_code":status.HTTP_200_OK}
     return {'message':'Document with this title already exists'}

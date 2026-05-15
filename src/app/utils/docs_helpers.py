@@ -42,3 +42,4 @@ async def save_file(file_path: str,file: UploadFile):
             status_code=400,
             detail=f"Invalid file type: {mime_type}"
         )
+    return mime_type
