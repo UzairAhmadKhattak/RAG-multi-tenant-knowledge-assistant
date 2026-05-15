@@ -7,6 +7,8 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_MINUTES = 1400
 
+BUFFER_SIZE = 5
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 UPLOADS_FOLDER = "uploads" 
 UPLOADS_PATH = Path(f"{BASE_DIR}/{UPLOADS_FOLDER}")
@@ -21,7 +23,8 @@ ROLE_ACCESS = {
 ALLOWED_MIME_TYPES = [
     "text/plain",
     "application/pdf",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.oasis.opendocument.text"
     ]
 
 class AccessLevel(str, Enum):
