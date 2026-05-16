@@ -10,7 +10,7 @@ from src.app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.app.api.deps import get_current_user
 from src.app.services.embed import embed_file
-
+from fastapi import HTTPException
 
 doc_router = APIRouter()
 
@@ -34,9 +34,12 @@ async def upload_doc(file: UploadFile = File(...),
                                            "organization_id":organization_id
                                            }
                                 )
-    await embed_file(db,file_path,mime_type,organization_id,doc.id)
+    if created is False:
+        raise HTTPException(
+            status_code=400,
+            detail='Document with this title already exists'
+        )
+    await embed_file(db,file_path,mime_type,organization_id,access_level,doc.id)
     await db.commit()
     await db.close()
-    if created:
-        return {'message':'Document successfully uploaded',"status_code":status.HTTP_200_OK}
-    return {'message':'Document with this title already exists'}
+    return {'detail':'Document successfully uploaded'}
