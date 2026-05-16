@@ -11,6 +11,8 @@ from odf.opendocument import load as load_odt
 from odf.text import P
 from langchain_core.documents import Document
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.app.core.constants import AccessLevel
+from src.app.utils.query_helpers import delete_items
 
 
 async def load_pdf_file(file_path: str):
@@ -67,6 +69,8 @@ async def flush_buffer(
     docs_buffer: list,
     organization_id: int,
     document_id: int,
+    access_level:AccessLevel,
+    update_embedding:bool=False
 ) -> None:
     """Split, embed, and persist a batch of raw Documents."""
     if not docs_buffer:
@@ -77,14 +81,23 @@ async def flush_buffer(
         return
 
     embeddings = await embed_documents(split_docs)
-
+    
+    if embeddings and update_embedding:
+        await delete_items(db,DocumentChunk,{'document_id':document_id})
+    
     for chunk, embedding in zip(split_docs, embeddings):
+        meta_data = {
+                    **chunk.metadata,
+                    'organization_id':organization_id,
+                     "document_id":document_id,
+                     "access_level":access_level
+                     }
         document_chunk = DocumentChunk(
             organization_id=organization_id,
             document_id=document_id,
             content=chunk.page_content,
             embedding=embedding,
-            meta_data=chunk.metadata,
+            meta_data=meta_data,
         )
         db.add(document_chunk)
 
@@ -94,7 +107,9 @@ async def embed_file(
     file_path: str,
     mime_type: str,
     organization_id: int,
+    access_level:AccessLevel,
     document_id: int,
+    update_embedding:bool = False
 ) -> None:
     if mime_type not in MIME_TYPE_LOADERS:
         raise HTTPException(
@@ -111,8 +126,8 @@ async def embed_file(
         docs_buffer.append(doc)
 
         if len(docs_buffer) >= BUFFER_SIZE:
-            await flush_buffer(db,docs_buffer, organization_id, document_id)
+            await flush_buffer(db,docs_buffer, organization_id, document_id, access_level,update_embedding)
             docs_buffer = []
 
     # Flush any remaining docs that didn't fill a full buffer
-    await flush_buffer(db,docs_buffer, organization_id, document_id)
+    await flush_buffer(db,docs_buffer, organization_id, document_id, access_level,update_embedding)
