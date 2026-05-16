@@ -30,6 +30,7 @@ async def save_file(file_path: str,file: UploadFile):
                 while chunk := await file.read(1024*1024):
                     await f.write(chunk)
         except TypeError:
+            file.file.seek(0)
             async with aiofiles.open(file_path,'wb') as f:
                 while chunk := await file.read(1024*1024):
                     await f.write(chunk)    
