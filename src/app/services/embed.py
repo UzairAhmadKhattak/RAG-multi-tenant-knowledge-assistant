@@ -11,8 +11,14 @@ from odf.opendocument import load as load_odt
 from odf.text import P
 from langchain_core.documents import Document
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.app.core.constants import AccessLevel
 from src.app.utils.query_helpers import delete_items
+from src.app.models import UserRole
+from src.app.core.constants import ROLE_ACCESS
+
+async def embed_query(query:str):
+    embedder = OpenAIEmbeddings(model="text-embedding-3-small")
+    return embedder.embed_query(query)
+
 
 
 async def load_pdf_file(file_path: str):
@@ -69,7 +75,7 @@ async def flush_buffer(
     docs_buffer: list,
     organization_id: int,
     document_id: int,
-    access_level:AccessLevel,
+    role:UserRole,
     update_embedding:bool=False
 ) -> None:
     """Split, embed, and persist a batch of raw Documents."""
@@ -90,7 +96,7 @@ async def flush_buffer(
                     **chunk.metadata,
                     'organization_id':organization_id,
                      "document_id":document_id,
-                     "access_level":access_level
+                     "access_level":ROLE_ACCESS[role]
                      }
         document_chunk = DocumentChunk(
             organization_id=organization_id,
@@ -107,7 +113,7 @@ async def embed_file(
     file_path: str,
     mime_type: str,
     organization_id: int,
-    access_level:AccessLevel,
+    role:UserRole,
     document_id: int,
     update_embedding:bool = False
 ) -> None:
@@ -126,8 +132,8 @@ async def embed_file(
         docs_buffer.append(doc)
 
         if len(docs_buffer) >= BUFFER_SIZE:
-            await flush_buffer(db,docs_buffer, organization_id, document_id, access_level,update_embedding)
+            await flush_buffer(db,docs_buffer, organization_id, document_id, role,update_embedding)
             docs_buffer = []
 
     # Flush any remaining docs that didn't fill a full buffer
-    await flush_buffer(db,docs_buffer, organization_id, document_id, access_level,update_embedding)
+    await flush_buffer(db,docs_buffer, organization_id, document_id, role,update_embedding)

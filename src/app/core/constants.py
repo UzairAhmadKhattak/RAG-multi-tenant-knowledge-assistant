@@ -26,8 +26,3 @@ ALLOWED_MIME_TYPES = [
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/vnd.oasis.opendocument.text"
     ]
-
-class AccessLevel(str, Enum):
-    EMPLOYEE_ONLY = "employee_only"
-    MANAGER_ONLY = "manager_only"
-    ADMIN_ONLY = "admin_only"

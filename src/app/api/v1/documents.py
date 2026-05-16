@@ -1,9 +1,8 @@
 from fastapi import APIRouter,File,UploadFile,Form,status,Depends
-from src.app.core.constants import (AccessLevel,
-                                    UPLOADS_FOLDER,
+from src.app.core.constants import (UPLOADS_FOLDER,
                                     UPLOADS_PATH)
 from src.app.utils.docs_helpers import save_file
-from src.app.models import Document,User
+from src.app.models import Document,User,UserRole
 from src.app.utils.query_helpers import get_or_create
 from src.app.schemas.base import GeneralResponse
 from src.app.db.session import get_db
@@ -16,7 +15,7 @@ doc_router = APIRouter()
 
 @doc_router.post("/upload",response_model=GeneralResponse)
 async def upload_doc(file: UploadFile = File(...),
-                     access_level:AccessLevel = Form(...),
+                     role:UserRole = Form(...),
                      title:str = Form(...),
                      db: AsyncSession = Depends(get_db),
                      user: User = Depends(get_current_user)
@@ -39,7 +38,7 @@ async def upload_doc(file: UploadFile = File(...),
             status_code=400,
             detail='Document with this title already exists'
         )
-    await embed_file(db,file_path,mime_type,organization_id,access_level,doc.id)
+    await embed_file(db,file_path,mime_type,organization_id,role,doc.id)
     await db.commit()
     await db.close()
     return {'detail':'Document successfully uploaded'}
