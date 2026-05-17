@@ -114,10 +114,10 @@ async def delete_items(
         Number of rows deleted
     """
 
-    stmt = sa_delete(model).filter_by(**kwargs).returning(model)
+    stmt = sa_delete(model).filter_by(**kwargs).returning(model.id)
     result = await db.execute(stmt)
 
-    await db.flush()
+    deleted_ids = result.scalars().all()
+    await db.commit()
 
-    deleted_rows = result.rowcount or 0
-    return deleted_rows
+    return len(deleted_ids)
