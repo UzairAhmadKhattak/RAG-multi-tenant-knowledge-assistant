@@ -89,7 +89,7 @@ async def flush_buffer(
     embeddings = await embed_documents(split_docs)
     
     if embeddings and update_embedding:
-        await delete_items(db,DocumentChunk,{'document_id':document_id})
+        await delete_items(db,DocumentChunk,document_id=document_id)
     
     for chunk, embedding in zip(split_docs, embeddings):
         meta_data = {
