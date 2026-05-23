@@ -27,4 +27,3 @@ class User(Base):
     organization = Relationship("Organization", back_populates='users')
     documents = Relationship("Document", back_populates='uploaded_by')
     conversations = Relationship("Conversation",back_populates='user')
-    query_logs = Relationship("QueryLog",back_populates='query_log_user')

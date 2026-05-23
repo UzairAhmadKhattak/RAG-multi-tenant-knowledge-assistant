@@ -10,7 +10,7 @@ class Conversation(Base):
 
     id: Mapped[int] = mapped_column(Integer,primary_key=True)
     title: Mapped[str] = mapped_column(String(255),nullable=False)
-    summary: Mapped[str] = mapped_column(Text,nullable=False)
+    summary: Mapped[str] = mapped_column(Text,nullable=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"))
 
@@ -18,4 +18,3 @@ class Conversation(Base):
 
     user = Relationship("User",back_populates="conversations")
     messages = Relationship("Message",back_populates="conversation")
-    conversation_query_logs = Relationship("QueryLog",back_populates="conversation")
