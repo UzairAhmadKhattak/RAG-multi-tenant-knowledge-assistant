@@ -8,7 +8,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from src.app.models.document import Document
 from typing import List
-
+import time
 
 async def get_documents(db:AsyncSession,document_ids:List[int]) -> dict:
     documents = await db.execute(
@@ -82,12 +82,49 @@ async def llm_response(context, query):
 
     chain = prompt | llm
 
+    start_time = time.perf_counter()
+
     response = await chain.ainvoke({
         "context": context,
         "question": query
     })
 
-    return response.content
+    latency_ms = (time.perf_counter() - start_time) * 1000
+
+    # ---- token usage extraction (robust) ----
+    usage = getattr(response, "usage_metadata", None) or {}
+
+    prompt_tokens = usage.get("input_tokens")
+    completion_tokens = usage.get("output_tokens")
+    total_tokens = usage.get("total_tokens")
+
+    # fallback for older/alternate metadata formats
+    if not total_tokens:
+        usage2 = getattr(response, "response_metadata", {}).get("token_usage", {})
+        prompt_tokens = prompt_tokens or usage2.get("prompt_tokens")
+        completion_tokens = completion_tokens or usage2.get("completion_tokens")
+        total_tokens = total_tokens or usage2.get("total_tokens")
+
+    # ---- cost estimation (you should adjust pricing as needed) ----
+    # Example placeholder rates for gpt-4o-mini (update based on your billing)
+    INPUT_COST_PER_1K = 0.00015
+    OUTPUT_COST_PER_1K = 0.00060
+
+    cost = None
+    if prompt_tokens is not None and completion_tokens is not None:
+        cost = (
+            (prompt_tokens / 1000) * INPUT_COST_PER_1K +
+            (completion_tokens / 1000) * OUTPUT_COST_PER_1K
+        )
+
+    return {
+        "response_content": response.content,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "total_tokens": total_tokens,
+        "latency_ms": latency_ms,
+        "cost": cost
+    }
 
 async def get_answer(db:AsyncSession,organization_id:int,role,query:str):
     
