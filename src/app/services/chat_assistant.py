@@ -9,6 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from src.app.models.document import Document
 from typing import List
 import time
+from src.app.models.message import Message
 
 async def get_documents(db:AsyncSession,document_ids:List[int]) -> dict:
     documents = await db.execute(
@@ -62,19 +63,25 @@ async def search_vectors(db, organization_id, role, embedded_query):
     result = await db.execute(stmt)
     return result.scalars().all()
 
-async def llm_response(context, query):
+async def llm_response(context, chat_history_summary, last_messages, query):
 
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    chat_history = "\n\n".join([f"User query: {message.user_query} \n Assistant Response: {message.assistant_response}" for  message in last_messages])
 
     prompt = ChatPromptTemplate.from_messages([
     ("system",
      """You are a helpful assistant. 
         Answer using the provided context and to understand the overall meaning and purpose of the documents use the documents summary.
+        Use the chat history summary to understand the overall meaning and purpose of the chat.
         The context may be messy or have formatting issues — extract relevant information regardless.
         Only say you don't know if the topic is genuinely absent."""),
     ("user",
      """Context:
         {context}
+        Chat history summary:
+        {chat_history_summary}
+        Chat history:
+        {chat_history}
         Question:
         {question}
      """)
@@ -86,6 +93,8 @@ async def llm_response(context, query):
 
     response = await chain.ainvoke({
         "context": context,
+        "chat_history_summary": chat_history_summary,
+        "chat_history": chat_history,
         "question": query
     })
 
@@ -126,7 +135,7 @@ async def llm_response(context, query):
         "cost": cost
     }
 
-async def get_answer(db:AsyncSession,organization_id:int,role,query:str):
+async def get_answer(db:AsyncSession,organization_id:int,role,query:str,chat_history_summary:str,last_messages:List[Message]):
     
     embedded_query = await embed_query(query)
     chunks = await search_vectors(db,organization_id,role,embedded_query)
@@ -134,7 +143,7 @@ async def get_answer(db:AsyncSession,organization_id:int,role,query:str):
     document_dict = await get_documents(db, document_ids)
     context = build_context(chunks,document_dict)
 
-    return await llm_response(context,query)
+    return await llm_response(context,chat_history_summary,last_messages,query)
     
 
 

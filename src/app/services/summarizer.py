@@ -1,5 +1,7 @@
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+from src.app.models.message import Message
+from typing import List
 
 async def summaries_document(file):
 
@@ -64,6 +66,42 @@ async def summaries_document(file):
 
     response = await chain.ainvoke({
         "content": selected_content
+    })
+
+    return response.content
+
+
+async def summarize_chat(messages:List[Message]) -> str:
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+    chat_history = "\n\n".join([f"User query: {message.user_query} \n Assistant Response: {message.assistant_response}" for  message in messages])
+
+    prompt = ChatPromptTemplate.from_messages([
+            (
+                "system",
+                """
+                You are a chat summarizer.
+
+                Summarize the chat using the provided messages:
+                - last 10 messages
+
+                Produce one clear paragraph summarizing the full chat meaning.
+                Ignore formatting noise.
+                """
+                ),
+                (
+                    "user",
+                    """
+                    CHAT HISTORY:
+                    {chat_history}
+                    """
+                )
+        ])
+
+    chain = prompt | llm
+
+    response = await chain.ainvoke({
+        "chat_history": chat_history
     })
 
     return response.content
